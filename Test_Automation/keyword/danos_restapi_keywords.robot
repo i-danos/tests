@@ -38,6 +38,7 @@ Show Device Version
     ${match}    ${opID}    Should Match Regexp    ${output}    Location:\\s+rest\/op\/(.*)\\n
     ${cmd2}    Replace String Using Regexp    ${show_version}    \/rest\/op\/.*    \/rest\/op\/${opID}
     ${cmd3}    Replace String Using Regexp    ${cmd2}    POST    GET
+    Sleep    3s
     Write    ${cmd3}
     ${output}    Read Until    $
     DeleteID    ${delete_op_id}    ${opID}
@@ -51,6 +52,7 @@ Show Interfaces
     ${match}    ${opID}    Should Match Regexp    ${output}    Location:\\s+rest\/op\/(.*)\\n
     ${cmd2}    Replace String Using Regexp    ${show_interfaces}    \/rest\/op\/.*    \/rest\/op\/${opID}
     ${cmd3}    Replace String Using Regexp    ${cmd2}    POST    GET
+    Sleep    3s
     Write    ${cmd3}
     ${output}    Read Until    $
     DeleteID    ${delete_op_id}    ${opID}
@@ -65,6 +67,7 @@ Show Interface Counters
     ${match}    ${opID}    Should Match Regexp    ${output}    Location:\\s+rest\/op\/(.*)\\n
     ${cmd2}    Replace String Using Regexp    ${show_interface_counters}    \/rest\/op\/.*    \/rest\/op\/${opID}
     ${cmd3}    Replace String Using Regexp    ${cmd2}    POST    GET
+    Sleep    3s
     Write    ${cmd3}
     ${output}    Read Until    $
     DeleteID    ${delete_op_id}    ${opID}
