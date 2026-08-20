@@ -4,9 +4,48 @@
 # * SPDX-License-Identifier: LGPL-2.1-only
 import time
 import vymgmt
+from pexpect import pxssh
+
+
+class Router(vymgmt.Router):
+    """vymgmt.Router with the two adjustments a DANOS router needs.
+
+    vymgmt targets VyOS, and two of its assumptions do not hold here:
+
+    * It builds its pxssh session with stock options, so ssh insists on
+      verifying the host key. A test router boots from a live image and
+      generates a fresh key every time, so that check can only fail -- the
+      session dies before a single command is sent, and vymgmt reports the
+      unhelpful "Could not establish connection to host".
+
+    * DANOS pipes operational-mode output through a pager. pexpect drives a
+      terminal the pager considers dumb, so it stops at "Press RETURN to
+      continue" and never hands the shell prompt back. pxssh's prompt() then
+      times out and vymgmt raises "Connection timed out" -- for a command
+      that in fact ran perfectly.
+
+    Both are fixed at login: the ssh options go in when the session is
+    built, and the pager is turned off for the rest of the session.
+    """
+
+    SSH_OPTIONS = {
+        "StrictHostKeyChecking": "no",
+        "UserKnownHostsFile": "/dev/null",
+    }
+
+    def login(self):
+        conn = pxssh.pxssh(options=self.SSH_OPTIONS)
+        conn.login(self._Router__address, self._Router__user,
+                   password=self._Router__password,
+                   port=self._Router__port)
+        # vymgmt keeps this state private; a subclass that replaces login()
+        # has to populate it so the inherited methods keep working.
+        self._Router__conn = conn
+        self._Router__logged_in = True
+        self.run_op_mode_command("export VYATTA_PAGER=cat")
 
 def config_set(ip, user, ps, cmd):
-    handle = vymgmt.Router(ip, user, password=ps, port=22)
+    handle = Router(ip, user, password=ps, port=22)
     handle.login()
     handle.configure()
     handle.set(cmd)
@@ -16,7 +55,7 @@ def config_set(ip, user, ps, cmd):
     handle.logout()
 
 def config_show_service(ip, user, ps, cmd):
-    handle = vymgmt.Router(ip, user, password=ps, port=22)
+    handle = Router(ip, user, password=ps, port=22)
     handle.login()
     handle.configure()
     out = handle.run_conf_mode_command(cmd)
@@ -27,7 +66,7 @@ def config_show_service(ip, user, ps, cmd):
     return output2
 
 def config_delete(ip, user, ps, cmd):
-    handle = vymgmt.Router(ip, user, password=ps, port=22)
+    handle = Router(ip, user, password=ps, port=22)
     handle.login()
     handle.configure()
     handle.delete(cmd)
@@ -37,7 +76,7 @@ def config_delete(ip, user, ps, cmd):
     handle.logout()
 
 def show_command(ip, user, ps, cmd):
-    handle = vymgmt.Router(ip, user, password=ps, port=22)
+    handle = Router(ip, user, password=ps, port=22)
     handle.login()
     out = handle.run_op_mode_command(cmd)
     handle.exit()
@@ -47,7 +86,7 @@ def show_command(ip, user, ps, cmd):
     return output
 
 def config_ipsecvpn(ip, user, ps, cmd):
-    handle = vymgmt.Router(ip, user, password=ps, port=22)
+    handle = Router(ip, user, password=ps, port=22)
     handle.login()
     handle.configure()
     for line in cmd:
@@ -59,7 +98,7 @@ def config_ipsecvpn(ip, user, ps, cmd):
     handle.logout()
 
 def config_mplsldp(ip, user, ps, cmd):
-    handle = vymgmt.Router(ip, user, password=ps, port=22)
+    handle = Router(ip, user, password=ps, port=22)
     handle.login()
     handle.configure()
     for line in cmd:
@@ -71,7 +110,7 @@ def config_mplsldp(ip, user, ps, cmd):
     handle.logout()
 
 def config(ip, user, ps, cmd):
-    handle = vymgmt.Router(ip, user, password=ps, port=22)
+    handle = Router(ip, user, password=ps, port=22)
     handle.login()
     handle.configure()
     for line in cmd:
@@ -84,7 +123,7 @@ def config(ip, user, ps, cmd):
 
 def apply_rule(ip, user, ps, iface, rule, cmd):
     command = cmd.replace('INTERFACE',iface).replace('RULE',rule)
-    handle = vymgmt.Router(ip, user, password=ps, port=22)
+    handle = Router(ip, user, password=ps, port=22)
     handle.login()
     handle.configure()
     handle.set(command)
@@ -95,7 +134,7 @@ def apply_rule(ip, user, ps, iface, rule, cmd):
 
 def delete_rule(ip, user, ps, iface, rule, cmd):
     command = cmd.replace('INTERFACE',iface).replace('RULE',rule)
-    handle = vymgmt.Router(ip, user, password=ps, port=22)
+    handle = Router(ip, user, password=ps, port=22)
     handle.login()
     handle.configure()
     handle.delete(command)
@@ -105,7 +144,7 @@ def delete_rule(ip, user, ps, iface, rule, cmd):
     handle.logout()
 
 def config_show_ipsecvpn(ip, user, ps, cmd):
-    handle = vymgmt.Router(ip, user, password=ps, port=22)
+    handle = Router(ip, user, password=ps, port=22)
     handle.login()
     handle.configure()
     out = handle.run_conf_mode_command(cmd)
@@ -115,7 +154,7 @@ def config_show_ipsecvpn(ip, user, ps, cmd):
     return output
 
 def config_show_mplsldp(ip, user, ps, cmd):
-    handle = vymgmt.Router(ip, user, password=ps, port=22)
+    handle = Router(ip, user, password=ps, port=22)
     handle.login()
     handle.configure()
     out = handle.run_conf_mode_command(cmd)
@@ -125,7 +164,7 @@ def config_show_mplsldp(ip, user, ps, cmd):
     return output
 
 def config_show(ip, user, ps, cmd):
-    handle = vymgmt.Router(ip, user, password=ps, port=22)
+    handle = Router(ip, user, password=ps, port=22)
     handle.login()
     handle.configure()
     out = handle.run_conf_mode_command(cmd)
@@ -137,7 +176,7 @@ def config_show(ip, user, ps, cmd):
 def sendping(ip, user, ps, vpnip):
     c1='sudo killall -9 ping'
     cmd='sudo ping -c30 ' + vpnip + ' > /dev/null 2>&1 &'
-    handle = vymgmt.Router(ip, user, password=ps, port=22)
+    handle = Router(ip, user, password=ps, port=22)
     handle.login()
     handle.run_op_mode_command(c1)
     out = handle.run_op_mode_command(cmd)
@@ -146,7 +185,7 @@ def sendping(ip, user, ps, vpnip):
 
 def capture_traffic(ip, user, ps, iface):
     cmd='sudo timeout 5 tcpdump -i ' + iface
-    handle = vymgmt.Router(ip, user, password=ps, port=22)
+    handle = Router(ip, user, password=ps, port=22)
     handle.login()
     out = handle.run_op_mode_command(cmd)
     handle.exit()
