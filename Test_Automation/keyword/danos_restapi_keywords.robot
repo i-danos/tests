@@ -6,6 +6,13 @@
 LoginToRESTClient
     Open Connection   ${RESTClient}    prompt=$    alias=${RESTClient}    timeout=15
     Login   ${u}    ${p}
+    # SSHLibrary allocates a PTY, so curl sees a TTY and styles its header
+    # output with bold and OSC-8 hyperlink escapes, which breaks every header
+    # regex below. curl ignores NO_COLOR for this; only --no-styled-output
+    # turns it off. A shell function applies it to all 53 call sites at once,
+    # leaving the test data byte-identical to upstream.
+    Write    curl() { command curl --no-styled-output "\$@"; }
+    Read Until    $
 
 LoginToDevice
     Open Connection   ${HOST1}    prompt=$    alias=${HOST1}    timeout=15
