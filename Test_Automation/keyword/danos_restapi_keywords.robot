@@ -35,7 +35,7 @@ Show Device Version
     Switch Connection    ${RESTClient}
     Write    ${show_version}
     ${output}    Read Until    $
-    ${match}    ${opID}    Should Match Regexp    ${output}    Location:\\s+rest\/op\/(.*)\\n
+    ${match}    ${opID}    Should Match Regexp    ${output}    (?i)Location:\\s+rest\/op\/(.*)\\n
     ${cmd2}    Replace String Using Regexp    ${show_version}    \/rest\/op\/.*    \/rest\/op\/${opID}
     ${cmd3}    Replace String Using Regexp    ${cmd2}    POST    GET
     Write    ${cmd3}
@@ -48,7 +48,7 @@ Show Interfaces
     Switch Connection    ${RESTClient}
     Write    ${show_interfaces}
     ${output}    Read Until    $
-    ${match}    ${opID}    Should Match Regexp    ${output}    Location:\\s+rest\/op\/(.*)\\n
+    ${match}    ${opID}    Should Match Regexp    ${output}    (?i)Location:\\s+rest\/op\/(.*)\\n
     ${cmd2}    Replace String Using Regexp    ${show_interfaces}    \/rest\/op\/.*    \/rest\/op\/${opID}
     ${cmd3}    Replace String Using Regexp    ${cmd2}    POST    GET
     Write    ${cmd3}
@@ -62,7 +62,7 @@ Show Interface Counters
     Switch Connection    ${RESTClient}
     Write    ${show_interface_counters}
     ${output}    Read Until    $
-    ${match}    ${opID}    Should Match Regexp    ${output}    Location:\\s+rest\/op\/(.*)\\n
+    ${match}    ${opID}    Should Match Regexp    ${output}    (?i)Location:\\s+rest\/op\/(.*)\\n
     ${cmd2}    Replace String Using Regexp    ${show_interface_counters}    \/rest\/op\/.*    \/rest\/op\/${opID}
     ${cmd3}    Replace String Using Regexp    ${cmd2}    POST    GET
     Write    ${cmd3}
@@ -75,7 +75,7 @@ Set Interface IP
     Switch Connection    ${RESTClient}
     Write    ${set_interface_ip_post}
     ${output}    Read Until    $
-    ${match}    ${confID}    Should Match Regexp    ${output}    Location:\\s+rest\/conf\/(.*)\\n
+    ${match}    ${confID}    Should Match Regexp    ${output}    (?i)Location:\\s+rest\/conf\/(.*)\\n
     ${confID}    Replace String Using Regexp    ${confID}    \r    ${EMPTY}
     ${cmd2}    Replace String Using Regexp    ${set_interface_ip_put}    CONFID    ${confID}
     Write    ${cmd2}
@@ -94,7 +94,7 @@ Delete Interface IP
     Switch Connection    ${RESTClient}
     Write    ${del_interface_ip_post}
     ${output}    Read Until    $
-    ${match}    ${confID}    Should Match Regexp    ${output}    Location:\\s+rest\/conf\/(.*)\\n
+    ${match}    ${confID}    Should Match Regexp    ${output}    (?i)Location:\\s+rest\/conf\/(.*)\\n
     ${confID}    Replace String Using Regexp    ${confID}    \r    ${EMPTY}
     ${cmd2}    Replace String Using Regexp    ${del_interface_ip_put}    CONFID    ${confID}
     Write    ${cmd2}
@@ -113,7 +113,7 @@ Set BGP Protocol
     Switch Connection    ${RESTClient}
     Write    ${set_bgp_post}
     ${output}    Read Until    $
-    ${match}    ${confID}    Should Match Regexp    ${output}    Location:\\s+rest\/conf\/(.*)\\n
+    ${match}    ${confID}    Should Match Regexp    ${output}    (?i)Location:\\s+rest\/conf\/(.*)\\n
     ${confID}    Replace String Using Regexp    ${confID}    \r    ${EMPTY}
     ${cmd2}    Replace String Using Regexp    ${set_bgp_put}    CONFID    ${confID}
     Write    ${cmd2}
@@ -132,7 +132,7 @@ Delete BGP Protocol
     Switch Connection    ${RESTClient}
     Write    ${del_bgp_post}
     ${output}    Read Until    $
-    ${match}    ${confID}    Should Match Regexp    ${output}    Location:\\s+rest\/conf\/(.*)\\n
+    ${match}    ${confID}    Should Match Regexp    ${output}    (?i)Location:\\s+rest\/conf\/(.*)\\n
     ${confID}    Replace String Using Regexp    ${confID}    \r    ${EMPTY}
     ${cmd2}    Replace String Using Regexp    ${del_bgp_put}    CONFID    ${confID}
     Write    ${cmd2}
@@ -151,7 +151,7 @@ Set OSPF Protocol
     Switch Connection    ${RESTClient}
     Write    ${set_ospf_post}
     ${output}    Read Until    $
-    ${match}    ${confID}    Should Match Regexp    ${output}    Location:\\s+rest\/conf\/(.*)\\n
+    ${match}    ${confID}    Should Match Regexp    ${output}    (?i)Location:\\s+rest\/conf\/(.*)\\n
     ${confID}    Replace String Using Regexp    ${confID}    \r    ${EMPTY}
     ${cmd2}    Replace String Using Regexp    ${set_ospf_put}    CONFID    ${confID}
     Write    ${cmd2}
@@ -170,7 +170,7 @@ Delete OSPF Protocol
     Switch Connection    ${RESTClient}
     Write    ${del_ospf_post}
     ${output}    Read Until    $
-    ${match}    ${confID}    Should Match Regexp    ${output}    Location:\\s+rest\/conf\/(.*)\\n
+    ${match}    ${confID}    Should Match Regexp    ${output}    (?i)Location:\\s+rest\/conf\/(.*)\\n
     ${confID}    Replace String Using Regexp    ${confID}    \r    ${EMPTY}
     ${cmd2}    Replace String Using Regexp    ${del_ospf_put}    CONFID    ${confID}
     Write    ${cmd2}
@@ -189,7 +189,7 @@ Set ISIS Protocol
     Switch Connection    ${RESTClient}
     Write    ${set_isis_post}
     ${output}    Read Until    $
-    ${match}    ${confID}    Should Match Regexp    ${output}    Location:\\s+rest\/conf\/(.*)\\n
+    ${match}    ${confID}    Should Match Regexp    ${output}    (?i)Location:\\s+rest\/conf\/(.*)\\n
     ${confID}    Replace String Using Regexp    ${confID}    \r    ${EMPTY}
     ${cmd2}    Replace String Using Regexp    ${set_isis_put}    CONFID    ${confID}
     Write    ${cmd2}
@@ -208,7 +208,7 @@ Delete ISIS Protocol
     Switch Connection    ${RESTClient}
     Write    ${del_isis_post}
     ${output}    Read Until    $
-    ${match}    ${confID}    Should Match Regexp    ${output}    Location:\\s+rest\/conf\/(.*)\\n
+    ${match}    ${confID}    Should Match Regexp    ${output}    (?i)Location:\\s+rest\/conf\/(.*)\\n
     ${confID}    Replace String Using Regexp    ${confID}    \r    ${EMPTY}
     ${cmd2}    Replace String Using Regexp    ${del_isis_put}    CONFID    ${confID}
     Write    ${cmd2}
@@ -227,7 +227,7 @@ Set Security Firewall
     Switch Connection    ${RESTClient}
     Write    ${set_firewall_post}
     ${output}    Read Until    $
-    ${match}    ${confID}    Should Match Regexp    ${output}    Location:\\s+rest\/conf\/(.*)\\n
+    ${match}    ${confID}    Should Match Regexp    ${output}    (?i)Location:\\s+rest\/conf\/(.*)\\n
     ${confID}    Replace String Using Regexp    ${confID}    \r    ${EMPTY}
     ${cmd2}    Replace String Using Regexp    ${set_firewall_put}    CONFID    ${confID}
     Write    ${cmd2}
@@ -246,7 +246,7 @@ Delete Security Firewall
     Switch Connection    ${RESTClient}
     Write    ${del_firewall_post}
     ${output}    Read Until    $
-    ${match}    ${confID}    Should Match Regexp    ${output}    Location:\\s+rest\/conf\/(.*)\\n
+    ${match}    ${confID}    Should Match Regexp    ${output}    (?i)Location:\\s+rest\/conf\/(.*)\\n
     ${confID}    Replace String Using Regexp    ${confID}    \r    ${EMPTY}
     ${cmd2}    Replace String Using Regexp    ${del_firewall_put}    CONFID    ${confID}
     Write    ${cmd2}
@@ -265,7 +265,7 @@ Set DNS Configuration
     Switch Connection    ${RESTClient}
     Write    ${set_dns_post}
     ${output}    Read Until    $
-    ${match}    ${confID}    Should Match Regexp    ${output}    Location:\\s+rest\/conf\/(.*)\\n
+    ${match}    ${confID}    Should Match Regexp    ${output}    (?i)Location:\\s+rest\/conf\/(.*)\\n
     ${confID}    Replace String Using Regexp    ${confID}    \r    ${EMPTY}
     ${cmd2}    Replace String Using Regexp    ${set_dns_put}    CONFID    ${confID}
     Write    ${cmd2}
@@ -284,7 +284,7 @@ Delete DNS Configuration
     Switch Connection    ${RESTClient}
     Write    ${del_dns_post}
     ${output}    Read Until    $
-    ${match}    ${confID}    Should Match Regexp    ${output}    Location:\\s+rest\/conf\/(.*)\\n
+    ${match}    ${confID}    Should Match Regexp    ${output}    (?i)Location:\\s+rest\/conf\/(.*)\\n
     ${confID}    Replace String Using Regexp    ${confID}    \r    ${EMPTY}
     ${cmd2}    Replace String Using Regexp    ${del_dns_put}    CONFID    ${confID}
     Write    ${cmd2}
@@ -303,7 +303,7 @@ Set NTP Configuration
     Switch Connection    ${RESTClient}
     Write    ${set_ntp_post}
     ${output}    Read Until    $
-    ${match}    ${confID}    Should Match Regexp    ${output}    Location:\\s+rest\/conf\/(.*)\\n
+    ${match}    ${confID}    Should Match Regexp    ${output}    (?i)Location:\\s+rest\/conf\/(.*)\\n
     ${confID}    Replace String Using Regexp    ${confID}    \r    ${EMPTY}
     ${cmd2}    Replace String Using Regexp    ${set_ntp_put}    CONFID    ${confID}
     Write    ${cmd2}
@@ -322,7 +322,7 @@ Delete NTP Configuration
     Switch Connection    ${RESTClient}
     Write    ${del_ntp_post}
     ${output}    Read Until    $
-    ${match}    ${confID}    Should Match Regexp    ${output}    Location:\\s+rest\/conf\/(.*)\\n
+    ${match}    ${confID}    Should Match Regexp    ${output}    (?i)Location:\\s+rest\/conf\/(.*)\\n
     ${confID}    Replace String Using Regexp    ${confID}    \r    ${EMPTY}
     ${cmd2}    Replace String Using Regexp    ${del_ntp_put}    CONFID    ${confID}
     Write    ${cmd2}
@@ -341,7 +341,7 @@ Set NAT Configuration
     Switch Connection    ${RESTClient}
     Write    ${set_nat_post}
     ${output}    Read Until    $
-    ${match}    ${confID}    Should Match Regexp    ${output}    Location:\\s+rest\/conf\/(.*)\\n
+    ${match}    ${confID}    Should Match Regexp    ${output}    (?i)Location:\\s+rest\/conf\/(.*)\\n
     ${confID}    Replace String Using Regexp    ${confID}    \r    ${EMPTY}
     ${cmd2}    Replace String Using Regexp    ${set_nat_put}    CONFID    ${confID}
     Write    ${cmd2}
@@ -360,7 +360,7 @@ Delete NAT Configuration
     Switch Connection    ${RESTClient}
     Write    ${del_nat_post}
     ${output}    Read Until    $
-    ${match}    ${confID}    Should Match Regexp    ${output}    Location:\\s+rest\/conf\/(.*)\\n
+    ${match}    ${confID}    Should Match Regexp    ${output}    (?i)Location:\\s+rest\/conf\/(.*)\\n
     ${confID}    Replace String Using Regexp    ${confID}    \r    ${EMPTY}
     ${cmd2}    Replace String Using Regexp    ${del_nat_put}    CONFID    ${confID}
     Write    ${cmd2}
