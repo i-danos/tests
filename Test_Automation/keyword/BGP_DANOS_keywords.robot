@@ -70,7 +70,7 @@ Access check and enable vymgmt support
         ShowCommand    ${vm}    ${access}[0]
         ${output}    ShowCommand    ${vm}    ${access}[1]
         Log    ${output}
-        Should Contain    ${output}    DANOS:Shipping:2105
+        Should Contain    ${output}    DANOS:Shipping:${RELEASE}
         #Should Contain    ${output}    -danos
     END
 
