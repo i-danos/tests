@@ -15,36 +15,38 @@ ${dest2}   ${PE2H2interfaceIP}
 
 *** Keywords ***
 Access check and enable vymgmt support
-    :FOR  ${vm}  IN    ${PE1}    ${P1}    ${PE2}
-    \    Log    Access check and enable vymgmt support on ${vm}
-    \    ${id}    Open Connection   ${vm}    prompt=$    alias=${vm}    timeout=15
-    \    Login   ${user}    ${pa}
-    \    Execute Command   touch .hushlogin
-    \    Write    show version
-    \    ${o}    Read Until    $
-    \    Log    ${o}
-    \    Should Contain    ${o}    danos-
-    \    Log    Access to ${vm} is successful and enabled vymgmt support
-    \    Close All Connections
+    FOR  ${vm}  IN    ${PE1}    ${P1}    ${PE2}
+        Log    Access check and enable vymgmt support on ${vm}
+        ${id}    Open Connection   ${vm}    prompt=$    alias=${vm}    timeout=15
+        Login   ${user}    ${pa}
+        Execute Command   touch .hushlogin
+        Write    show version
+        ${o}    Read Until    $
+        Log    ${o}
+        Should Contain    ${o}    danos-
+        Log    Access to ${vm} is successful and enabled vymgmt support
+        Close All Connections
+    END
 
 Clear configurations on the topology
-    :FOR  ${vm}  IN    ${PE1}    ${P1}    ${PE2}
-    \    Log    Clear configurations on ${vm}
-    \    ${id}    Open Connection   ${vm}    prompt=$    alias=${vm}    timeout=15
-    \    Login   ${user}    ${pa}
-    \    Write    configure
-    \    ${o}    Read Until    \#
-    \    Write    delete interfaces
-    \    ${o}    Read Until    \#
-    \    Write    delete protocols mpls-ldp
-    \    ${o}    Read Until    \#
-    \    Write    delete protocols ospf
-    \    ${o}    Read Until    \#
-    \    Write    delete security vpn
-    \    ${o}    Read Until    \#
-    \    Write    commit
-    \    ${o}    Read Until    \#
-    \    Close All Connections
+    FOR  ${vm}  IN    ${PE1}    ${P1}    ${PE2}
+        Log    Clear configurations on ${vm}
+        ${id}    Open Connection   ${vm}    prompt=$    alias=${vm}    timeout=15
+        Login   ${user}    ${pa}
+        Write    configure
+        ${o}    Read Until    \#
+        Write    delete interfaces
+        ${o}    Read Until    \#
+        Write    delete protocols mpls-ldp
+        ${o}    Read Until    \#
+        Write    delete protocols ospf
+        ${o}    Read Until    \#
+        Write    delete security vpn
+        ${o}    Read Until    \#
+        Write    commit
+        ${o}    Read Until    \#
+        Close All Connections
+    END
 
 ShowService
     [Arguments]    ${arg1}    ${arg2}    ${arg3}    ${arg4}
@@ -95,37 +97,40 @@ Configure MPLS LDP on PE2
     danos_cli.config_mplsldp    ${PE2}   ${user}    ${pa}    ${PE2_mpls_ldp_config}
 
 Verify connectivity from PE1
-    :FOR  ${ip}  IN  @{PE1_pingcheck}
-    \    Log    Verify pinging interface IPs from ${ip}
-    \    ${c1}    Catenate    ping -c1     ${ip}
-    \    ShowService    ${PE1}   ${user}    ${pa}    ${c1}
-    \    ${cmd}    Catenate    ping -c1     ${ip}
-    \    ${output}    ShowService    ${PE1}   ${user}    ${pa}    ${c1}
-    \    danos_cli.pr    ${output}
-    \    ${o}    Evaluate    ''.join(${output})
-    \    Should Not Contain    ${o}    100%
+    FOR  ${ip}  IN  @{PE1_pingcheck}
+        Log    Verify pinging interface IPs from ${ip}
+        ${c1}    Catenate    ping -c1     ${ip}
+        ShowService    ${PE1}   ${user}    ${pa}    ${c1}
+        ${cmd}    Catenate    ping -c1     ${ip}
+        ${output}    ShowService    ${PE1}   ${user}    ${pa}    ${c1}
+        danos_cli.pr    ${output}
+        ${o}    Evaluate    ''.join(${output})
+        Should Not Contain    ${o}    100%
+    END
 
 Verify connectivity from P1
-    :FOR  ${ip}  IN  @{P1_pingcheck}
-    \    Log    Verify pinging interface IPs from ${ip}
-    \    ${c1}    Catenate    ping -c1     ${ip}
-    \    ShowService    ${P1}   ${user}    ${pa}    ${c1}
-    \    ${cmd}    Catenate    ping -c1     ${ip}
-    \    ${output}    ShowService    ${P1}   ${user}    ${pa}    ${c1}
-    \    danos_cli.pr    ${output}
-    \    ${o}    Evaluate    ''.join(${output})
-    \    Should Not Contain    ${o}    100%
+    FOR  ${ip}  IN  @{P1_pingcheck}
+        Log    Verify pinging interface IPs from ${ip}
+        ${c1}    Catenate    ping -c1     ${ip}
+        ShowService    ${P1}   ${user}    ${pa}    ${c1}
+        ${cmd}    Catenate    ping -c1     ${ip}
+        ${output}    ShowService    ${P1}   ${user}    ${pa}    ${c1}
+        danos_cli.pr    ${output}
+        ${o}    Evaluate    ''.join(${output})
+        Should Not Contain    ${o}    100%
+    END
 
 Verify connectivity from PE2
-    :FOR  ${ip}  IN  @{PE2_pingcheck}
-    \    Log    Verify pinging interface IPs from ${ip}
-    \    ${c1}    Catenate    ping -c1     ${ip}
-    \    ShowService    ${PE2}   ${user}    ${pa}    ${c1}
-    \    ${cmd}    Catenate    ping -c1     ${ip}
-    \    ${output}    ShowService    ${PE2}   ${user}    ${pa}    ${c1}
-    \    danos_cli.pr    ${output}
-    \    ${o}    Evaluate    ''.join(${output})
-    \    Should Not Contain    ${o}    100%
+    FOR  ${ip}  IN  @{PE2_pingcheck}
+        Log    Verify pinging interface IPs from ${ip}
+        ${c1}    Catenate    ping -c1     ${ip}
+        ShowService    ${PE2}   ${user}    ${pa}    ${c1}
+        ${cmd}    Catenate    ping -c1     ${ip}
+        ${output}    ShowService    ${PE2}   ${user}    ${pa}    ${c1}
+        danos_cli.pr    ${output}
+        ${o}    Evaluate    ''.join(${output})
+        Should Not Contain    ${o}    100%
+    END
 
 Verify E2E reachability from PE1
     Log    Verify E2E reachability from PE1
@@ -158,20 +163,22 @@ Validate OSPF status on PE2
     Should Contain    ${o}    Full
 
 Validate MPLS-LDP Neighbor status
-    :FOR  ${ip}  IN    ${PE1}    ${P1}    ${PE2}
-    \    Log    Validate MPLS-LDP Neighbor status on ${ip}
-    \    ${output}    ShowService    ${ip}   ${user}    ${pa}    ${validate_mpls_ldp_neighbor}
-    \    danos_cli.pr    ${output}
-    \    ${o}    Evaluate    ''.join(${output})
-    \    Should Contain    ${o}    OPERATIONAL
+    FOR  ${ip}  IN    ${PE1}    ${P1}    ${PE2}
+        Log    Validate MPLS-LDP Neighbor status on ${ip}
+        ${output}    ShowService    ${ip}   ${user}    ${pa}    ${validate_mpls_ldp_neighbor}
+        danos_cli.pr    ${output}
+        ${o}    Evaluate    ''.join(${output})
+        Should Contain    ${o}    OPERATIONAL
+    END
 
 Validate MPLS-LDP IPv4 interface status
-    :FOR  ${ip}  IN    ${PE1}    ${P1}    ${PE2}
-    \    Log    Validate MPLS-LDP IPv4 interface status on ${ip}
-    \    ${output}    ShowService    ${ip}   ${user}    ${pa}    ${validate_mpls_ldp_ipv4_interface}
-    \    danos_cli.pr    ${output}
-    \    ${o}    Evaluate    ''.join(${output})
-    \    Should Contain    ${o}    ACTIVE
+    FOR  ${ip}  IN    ${PE1}    ${P1}    ${PE2}
+        Log    Validate MPLS-LDP IPv4 interface status on ${ip}
+        ${output}    ShowService    ${ip}   ${user}    ${pa}    ${validate_mpls_ldp_ipv4_interface}
+        danos_cli.pr    ${output}
+        ${o}    Evaluate    ''.join(${output})
+        Should Contain    ${o}    ACTIVE
+    END
 
 Validate MPLS-LDP IPv4 discovery status on PE1
     Log    Validate MPLS-LDP IPv4 discovery status on PE1

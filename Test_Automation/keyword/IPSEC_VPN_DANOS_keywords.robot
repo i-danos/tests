@@ -16,34 +16,36 @@ ${dest2}   ${R3H2interfaceIP}
 
 *** Keywords ***
 Access check and enable vymgmt support
-    :FOR  ${vm}  IN    ${R1}    ${R2}    ${R3}
-    \    Log    Access check and enable vymgmt support on ${vm}
-    \    ${id}    Open Connection   ${vm}    prompt=$    alias=${vm}    timeout=15
-    \    Login   ${user}    ${pa}
-    \    Execute Command   touch .hushlogin
-    \    Write    show version
-    \    ${o}    Read Until    $
-    \    Log    ${o}
-    \    Should Contain    ${o}    danos-
-    \    Log    Access to ${vm} is successful and enabled vymgmt support
-    \    Close All Connections
+    FOR  ${vm}  IN    ${R1}    ${R2}    ${R3}
+        Log    Access check and enable vymgmt support on ${vm}
+        ${id}    Open Connection   ${vm}    prompt=$    alias=${vm}    timeout=15
+        Login   ${user}    ${pa}
+        Execute Command   touch .hushlogin
+        Write    show version
+        ${o}    Read Until    $
+        Log    ${o}
+        Should Contain    ${o}    danos-
+        Log    Access to ${vm} is successful and enabled vymgmt support
+        Close All Connections
+    END
 
 Clear configurations on the topology
-    :FOR  ${vm}  IN    ${R1}    ${R2}    ${R3}
-    \    Log    Clear configurations on ${vm}
-    \    ${id}    Open Connection   ${vm}    prompt=$    alias=${vm}    timeout=15
-    \    Login   ${user}    ${pa}
-    \    Write    configure
-    \    ${o}    Read Until    \#
-    \    Write    delete interfaces
-    \    ${o}    Read Until    \#
-    \    Write    delete security vpn ipsec
-    \    ${o}    Read Until    \#
-    \    Write    delete protocols ospf
-    \    ${o}    Read Until    \#
-    \    Write    commit
-    \    ${o}    Read Until    \#
-    \    Close All Connections
+    FOR  ${vm}  IN    ${R1}    ${R2}    ${R3}
+        Log    Clear configurations on ${vm}
+        ${id}    Open Connection   ${vm}    prompt=$    alias=${vm}    timeout=15
+        Login   ${user}    ${pa}
+        Write    configure
+        ${o}    Read Until    \#
+        Write    delete interfaces
+        ${o}    Read Until    \#
+        Write    delete security vpn ipsec
+        ${o}    Read Until    \#
+        Write    delete protocols ospf
+        ${o}    Read Until    \#
+        Write    commit
+        ${o}    Read Until    \#
+        Close All Connections
+    END
 
 ShowService
     [Arguments]    ${arg1}    ${arg2}    ${arg3}    ${arg4}
@@ -98,10 +100,11 @@ Configure R3 IPSEC VPN
     danos_cli.config_ipsecvpn    ${R3}   ${user}    ${pa}    ${R3_ipsec_vpn_config}
 
 Verify connectivity from R1
-    :FOR  ${ip}  IN  @{R1_pingcheck}
-    \    Log    Verify pinging interface IPs from ${ip}
-    \    ${c1}    Catenate    ping -c1     ${ip}
-    \    ShowService    ${R1}   ${user}    ${pa}    ${c1}
+    FOR  ${ip}  IN  @{R1_pingcheck}
+        Log    Verify pinging interface IPs from ${ip}
+        ${c1}    Catenate    ping -c1     ${ip}
+        ShowService    ${R1}   ${user}    ${pa}    ${c1}
+    END
     # This is not working from  jenkins and hence using ShowService method
     #\    danos_cli.config_show_ipsecvpn    ${R1}   ${user}    ${pa}    ${c1}
     \    ${cmd}    Catenate    ping -c1     ${ip}
@@ -112,26 +115,28 @@ Verify connectivity from R1
     \    Should Not Contain    ${o}    100%
 
 Verify connectivity from R2
-    :FOR  ${ip}  IN  @{R2_pingcheck}
-    \    Log    Verify pinging interface IPs from ${ip}
-    \    ${c1}    Catenate    ping -c1     ${ip}
-    \    ShowService    ${R2}   ${user}    ${pa}    ${c1}
-    \    ${cmd}    Catenate    ping -c1     ${ip}
-    \    ${output}    ShowService    ${R2}   ${user}    ${pa}    ${c1}
-    \    danos_cli.pr    ${output}
-    \    ${o}    Evaluate    ''.join(${output})
-    \    Should Not Contain    ${o}    100%
+    FOR  ${ip}  IN  @{R2_pingcheck}
+        Log    Verify pinging interface IPs from ${ip}
+        ${c1}    Catenate    ping -c1     ${ip}
+        ShowService    ${R2}   ${user}    ${pa}    ${c1}
+        ${cmd}    Catenate    ping -c1     ${ip}
+        ${output}    ShowService    ${R2}   ${user}    ${pa}    ${c1}
+        danos_cli.pr    ${output}
+        ${o}    Evaluate    ''.join(${output})
+        Should Not Contain    ${o}    100%
+    END
 
 Verify connectivity from R3
-    :FOR  ${ip}  IN  @{R3_pingcheck}
-    \    Log    Verify pinging interface IPs from ${ip}
-    \    ${c1}    Catenate    ping -c1     ${ip}
-    \    ShowService    ${R3}   ${user}    ${pa}    ${c1}
-    \    ${cmd}    Catenate    ping -c1     ${ip}
-    \    ${output}    ShowService    ${R3}   ${user}    ${pa}    ${c1}
-    \    danos_cli.pr    ${output}
-    \    ${o}    Evaluate    ''.join(${output})
-    \    Should Not Contain    ${o}    100%
+    FOR  ${ip}  IN  @{R3_pingcheck}
+        Log    Verify pinging interface IPs from ${ip}
+        ${c1}    Catenate    ping -c1     ${ip}
+        ShowService    ${R3}   ${user}    ${pa}    ${c1}
+        ${cmd}    Catenate    ping -c1     ${ip}
+        ${output}    ShowService    ${R3}   ${user}    ${pa}    ${c1}
+        danos_cli.pr    ${output}
+        ${o}    Evaluate    ''.join(${output})
+        Should Not Contain    ${o}    100%
+    END
 
 Verify E2E reachability from R1
     Log    Verify E2E reachability from R1
