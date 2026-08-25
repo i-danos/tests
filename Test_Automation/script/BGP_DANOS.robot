@@ -53,6 +53,7 @@ Resource           ../keyword/BGP_DANOS_keywords.robot
 Resource           ../testdata/BGP_DANOS_testdata.robot
 
 *** Variables ***
+${CLI_TIMEOUT}    90    # CLI prompt timeout; raise on slow or virtualised setups
 ${RELEASE}    2608    # release id under test; override with --variable RELEASE:<id>
 
 

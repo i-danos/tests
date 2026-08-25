@@ -11,7 +11,11 @@ Library           Collections
 *** Keywords ***
 LoginToRouter
     [Arguments]    ${arg1}
-    Open Connection   ${arg1}    prompt=$    alias=${arg1}    timeout=15
+    # 15s was enough on the original lab hardware. Under virtualisation with
+    # four routers, BGP convergence plus command execution regularly exceeds
+    # it, and every overrun surfaces as the unhelpful
+    # "No match found for '$' in 15 seconds" rather than as a slow test.
+    Open Connection   ${arg1}    prompt=$    alias=${arg1}    timeout=${CLI_TIMEOUT}
     Login   ${user}    ${pa}
     Write    set terminal length 0
     Read Until    $
