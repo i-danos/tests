@@ -26,7 +26,7 @@ Access check and enable vymgmt support
         Write    show version
         ${o}    Read Until    $
         Log    ${o}
-        Should Contain    ${o}    2105
+        Should Contain    ${o}    ${RELEASE}
         Log    Access to ${vm} is successful and enabled vymgmt support
         Close All Connections
     END

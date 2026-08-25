@@ -53,6 +53,7 @@ Resource           ../keyword/BGP_DANOS_keywords.robot
 Resource           ../testdata/BGP_DANOS_testdata.robot
 
 *** Variables ***
+${RELEASE}    2608    # release id under test; override with --variable RELEASE:<id>
 
 
 *** Test Cases ***

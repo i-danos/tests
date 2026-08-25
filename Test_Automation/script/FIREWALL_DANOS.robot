@@ -38,6 +38,7 @@ Library           Collections
 Resource           ../keyword/FIREWALL_DANOS_keywords.robot
 
 *** Variables ***
+${RELEASE}    2608    # release id under test; override with --variable RELEASE:<id>
 ${R1}      192.168.203.155
 ${R2}      192.168.203.156
 ${R3}      192.168.203.157
