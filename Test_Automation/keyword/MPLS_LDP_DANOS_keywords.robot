@@ -26,8 +26,8 @@ Access check and enable vymgmt support
         Should Contain    ${o}    danos-
         Log    Access to ${vm} is successful and enabled vymgmt support
         Close All Connections
-    END
 
+    END
 Clear configurations on the topology
     FOR  ${vm}  IN    ${PE1}    ${P1}    ${PE2}
         Log    Clear configurations on ${vm}
@@ -106,8 +106,8 @@ Verify connectivity from PE1
         danos_cli.pr    ${output}
         ${o}    Evaluate    ''.join(${output})
         Should Not Contain    ${o}    100%
-    END
 
+    END
 Verify connectivity from P1
     FOR  ${ip}  IN  @{P1_pingcheck}
         Log    Verify pinging interface IPs from ${ip}
@@ -118,8 +118,8 @@ Verify connectivity from P1
         danos_cli.pr    ${output}
         ${o}    Evaluate    ''.join(${output})
         Should Not Contain    ${o}    100%
-    END
 
+    END
 Verify connectivity from PE2
     FOR  ${ip}  IN  @{PE2_pingcheck}
         Log    Verify pinging interface IPs from ${ip}
@@ -169,8 +169,8 @@ Validate MPLS-LDP Neighbor status
         danos_cli.pr    ${output}
         ${o}    Evaluate    ''.join(${output})
         Should Contain    ${o}    OPERATIONAL
-    END
 
+    END
 Validate MPLS-LDP IPv4 interface status
     FOR  ${ip}  IN    ${PE1}    ${P1}    ${PE2}
         Log    Validate MPLS-LDP IPv4 interface status on ${ip}

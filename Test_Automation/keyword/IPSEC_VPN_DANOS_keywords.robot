@@ -27,8 +27,8 @@ Access check and enable vymgmt support
         Should Contain    ${o}    danos-
         Log    Access to ${vm} is successful and enabled vymgmt support
         Close All Connections
-    END
 
+    END
 Clear configurations on the topology
     FOR  ${vm}  IN    ${R1}    ${R2}    ${R3}
         Log    Clear configurations on ${vm}
@@ -104,16 +104,16 @@ Verify connectivity from R1
         Log    Verify pinging interface IPs from ${ip}
         ${c1}    Catenate    ping -c1     ${ip}
         ShowService    ${R1}   ${user}    ${pa}    ${c1}
-    END
     # This is not working from  jenkins and hence using ShowService method
     #\    danos_cli.config_show_ipsecvpn    ${R1}   ${user}    ${pa}    ${c1}
-    \    ${cmd}    Catenate    ping -c1     ${ip}
-    \    ${output}    ShowService    ${R1}   ${user}    ${pa}    ${c1}
+        ${cmd}    Catenate    ping -c1     ${ip}
+        ${output}    ShowService    ${R1}   ${user}    ${pa}    ${c1}
     #\    ${output}    danos_cli.config_show_ipsecvpn    ${R1}   ${user}    ${pa}    ${cmd}
-    \    danos_cli.pr    ${output}
-    \    ${o}    Evaluate    ''.join(${output})
-    \    Should Not Contain    ${o}    100%
+        danos_cli.pr    ${output}
+        ${o}    Evaluate    ''.join(${output})
+        Should Not Contain    ${o}    100%
 
+    END
 Verify connectivity from R2
     FOR  ${ip}  IN  @{R2_pingcheck}
         Log    Verify pinging interface IPs from ${ip}
@@ -124,8 +124,8 @@ Verify connectivity from R2
         danos_cli.pr    ${output}
         ${o}    Evaluate    ''.join(${output})
         Should Not Contain    ${o}    100%
-    END
 
+    END
 Verify connectivity from R3
     FOR  ${ip}  IN  @{R3_pingcheck}
         Log    Verify pinging interface IPs from ${ip}
