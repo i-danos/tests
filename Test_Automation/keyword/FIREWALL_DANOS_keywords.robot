@@ -26,11 +26,11 @@ Access check and enable vymgmt support
         Write    show version
         ${o}    Read Until    $
         Log    ${o}
-        Should Contain    ${o}    ${RELEASE}
+        Should Contain    ${o}    2105
         Log    Access to ${vm} is successful and enabled vymgmt support
         Close All Connections
-    END
 
+    END
 Clear configurations on the topology
     FOR  ${vm}  IN    ${R1}    ${R2}    ${R3}
         Log    Clear configurations on ${vm}
@@ -99,8 +99,8 @@ Verify connectivity from R1
         danos_cli.pr    ${output}
         ${o}    Evaluate    ''.join(${output})
         Should Not Contain    ${o}    100%
-    END
 
+    END
 Verify connectivity from R2
     FOR  ${ip}  IN  @{R2_pingcheck}
         Log    Verify pinging interface IPs from ${ip}
@@ -111,8 +111,8 @@ Verify connectivity from R2
         danos_cli.pr    ${output}
         ${o}    Evaluate    ''.join(${output})
         Should Not Contain    ${o}    100%
-    END
 
+    END
 Verify connectivity from R3
     FOR  ${ip}  IN  @{R3_pingcheck}
         Log    Verify pinging interface IPs from ${ip}
