@@ -45,6 +45,13 @@ Show Device Version
     ${match}    ${opID}    Should Match Regexp    ${output}    (?i)Location:\\s+rest\/op\/(.*)\\n
     ${cmd2}    Replace String Using Regexp    ${show_version}    \/rest\/op\/.*    \/rest\/op\/${opID}
     ${cmd3}    Replace String Using Regexp    ${cmd2}    POST    GET
+    # The operation runs asynchronously: POST returns a location straight
+    # away and the result appears about a second later. GETting it
+    # immediately returned the header rows and nothing else -- and the
+    # result is consumed by that read, so the data was gone by the time
+    # anything asserted on it. Measured: 0 rows at once, 2 rows after 1s,
+    # and 0 again on a second GET.
+    Sleep    3s
     Write    ${cmd3}
     ${output}    Read Until    $
     DeleteID    ${delete_op_id}    ${opID}
@@ -58,6 +65,13 @@ Show Interfaces
     ${match}    ${opID}    Should Match Regexp    ${output}    (?i)Location:\\s+rest\/op\/(.*)\\n
     ${cmd2}    Replace String Using Regexp    ${show_interfaces}    \/rest\/op\/.*    \/rest\/op\/${opID}
     ${cmd3}    Replace String Using Regexp    ${cmd2}    POST    GET
+    # The operation runs asynchronously: POST returns a location straight
+    # away and the result appears about a second later. GETting it
+    # immediately returned the header rows and nothing else -- and the
+    # result is consumed by that read, so the data was gone by the time
+    # anything asserted on it. Measured: 0 rows at once, 2 rows after 1s,
+    # and 0 again on a second GET.
+    Sleep    3s
     Write    ${cmd3}
     ${output}    Read Until    $
     DeleteID    ${delete_op_id}    ${opID}
@@ -72,6 +86,13 @@ Show Interface Counters
     ${match}    ${opID}    Should Match Regexp    ${output}    (?i)Location:\\s+rest\/op\/(.*)\\n
     ${cmd2}    Replace String Using Regexp    ${show_interface_counters}    \/rest\/op\/.*    \/rest\/op\/${opID}
     ${cmd3}    Replace String Using Regexp    ${cmd2}    POST    GET
+    # The operation runs asynchronously: POST returns a location straight
+    # away and the result appears about a second later. GETting it
+    # immediately returned the header rows and nothing else -- and the
+    # result is consumed by that read, so the data was gone by the time
+    # anything asserted on it. Measured: 0 rows at once, 2 rows after 1s,
+    # and 0 again on a second GET.
+    Sleep    3s
     Write    ${cmd3}
     ${output}    Read Until    $
     DeleteID    ${delete_op_id}    ${opID}
