@@ -416,7 +416,10 @@ Verify Route Flaping/dampening Feature
     Log    First flap: Verify route flapping on ${R4} and the flap count should be 1
     ${output}    ShowCommand    ${R4}    ${route_flapping}
     Log    ${output}
-    Should Contain    ${output}    h ${R1_rr_ip}/32   ${R1R4_iface_ip}       1
+    # The column widths moved between FRR 7.6 and 10.3 -- the flag is now
+    # followed by two spaces, not one -- and this asserted on the exact
+    # spacing of a whole row. Match the fields instead of the layout.
+    Should Match Regexp    ${output}    h +${R1_rr_ip}/32 +${R1R4_iface_ip} +1
     Log    Configure network on ${R1}
     SetCommand    ${R1}    ${R1_nw}
     # Sleep 5 sec for convergence # REQUIRED
@@ -432,7 +435,10 @@ Verify Route Flaping/dampening Feature
     Log    Second flap: Verify route flapping on ${R4} and the flap count should be 2
     ${output}    ShowCommand    ${R4}    ${route_flapping}
     Log    ${output}
-    Should Contain    ${output}    h ${R1_rr_ip}/32   ${R1R4_iface_ip}       2
+    # The column widths moved between FRR 7.6 and 10.3 -- the flag is now
+    # followed by two spaces, not one -- and this asserted on the exact
+    # spacing of a whole row. Match the fields instead of the layout.
+    Should Match Regexp    ${output}    h +${R1_rr_ip}/32 +${R1R4_iface_ip} +2
     # Validate dempening
     Log    Configure network on ${R1}
     SetCommand    ${R1}    ${R1_nw}
@@ -440,7 +446,10 @@ Verify Route Flaping/dampening Feature
     Sleep    5
     ${output}    ShowCommand    ${R4}    ${route_flapping}
     Log    ${output}
-    Should Contain    ${output}    > ${R1_rr_ip}/32   ${R1R4_iface_ip}       2
+    # The column widths moved between FRR 7.6 and 10.3 -- the flag is now
+    # followed by two spaces, not one -- and this asserted on the exact
+    # spacing of a whole row. Match the fields instead of the layout.
+    Should Match Regexp    ${output}    \> +${R1_rr_ip}/32 +${R1R4_iface_ip} +2
     Log    Delete network on ${R1} and set it again to check the dampening
     DeleteCommand    ${R1}    ${R1_nw}
     SetCommand    ${R1}    ${R1_nw}
@@ -450,7 +459,10 @@ Verify Route Flaping/dampening Feature
     Log    Third flap: Verify route dampening on ${R4} and the flap count should be 3 and tag d
     ${output}    ShowCommand    ${R4}    ${route_flapping}
     Log    ${output}
-    Should Contain    ${output}    d ${R1_rr_ip}/32   ${R1R4_iface_ip}       3
+    # The column widths moved between FRR 7.6 and 10.3 -- the flag is now
+    # followed by two spaces, not one -- and this asserted on the exact
+    # spacing of a whole row. Match the fields instead of the layout.
+    Should Match Regexp    ${output}    d +${R1_rr_ip}/32 +${R1R4_iface_ip} +3
 
 Show Interfaces
     FOR  ${vm}  IN    ${R1}    ${R2}    ${R3}    ${R4}
