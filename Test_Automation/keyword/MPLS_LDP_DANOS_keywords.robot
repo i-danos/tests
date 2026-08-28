@@ -23,7 +23,11 @@ Access check and enable vymgmt support
         Write    show version
         ${o}    Read Until    $
         Log    ${o}
-        Should Contain    ${o}    danos-
+        # Was "danos-", which matched the 2105 image name and nothing in
+        # 2608: the image is i-danos and "show version" never carried the
+        # old string. BGP_DANOS_keywords.robot already asserts on the
+        # release banner, which is stable across image names.
+        Should Contain    ${o}    DANOS:Shipping:${RELEASE}
         Log    Access to ${vm} is successful and enabled vymgmt support
         Close All Connections
 
