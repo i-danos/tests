@@ -26,7 +26,9 @@ Access check and enable vymgmt support
         Write    show version
         ${o}    Read Until    $
         Log    ${o}
-        Should Contain    ${o}    2105
+        # Was the bare release id 2105. The other suites now assert on the
+        # release banner instead, which does not change with the image name.
+        Should Contain    ${o}    DANOS:Shipping:${RELEASE}
         Log    Access to ${vm} is successful and enabled vymgmt support
         Close All Connections
 
@@ -383,7 +385,11 @@ Verify SMTP is blocked
     ${output}    danos_cli.config_show    ${R1}   ${user}    ${pa}    ${cmd}
     danos_cli.pr    ${output}
     ${o}    Evaluate    ''.join(${output})
-    Should Contain    ${o}    (smtp) : Connection timed out
+    # Debian 13's netcat-openbsd words this differently from the netcat this
+    # suite was written against: "port 25 (tcp) timed out: Operation now in
+    # progress" rather than "(smtp) : Connection timed out". The service name
+    # is gone and so is the phrase; match what both versions share.
+    Should Contain    ${o}    timed out
 
 Remove blk-smtp firewall rule on the interface
     Log    Remove blk-smtp firewall rule on the interface
@@ -403,7 +409,11 @@ Verify DNS is blocked
     ${output}    danos_cli.config_show    ${R1}   ${user}    ${pa}    ${cmd}
     danos_cli.pr    ${output}
     ${o}    Evaluate    ''.join(${output})
-    Should Contain    ${o}    (domain) : Connection timed out
+    # Debian 13's netcat-openbsd words this differently from the netcat this
+    # suite was written against: "port 25 (tcp) timed out: Operation now in
+    # progress" rather than "(smtp) : Connection timed out". The service name
+    # is gone and so is the phrase; match what both versions share.
+    Should Contain    ${o}    timed out
 
 Remove blk-dns firewall rule on the interface
     Log    Remove blk-dns firewall rule on the interface
@@ -423,7 +433,11 @@ Verify HTTPS is blocked
     ${output}    danos_cli.config_show    ${R1}   ${user}    ${pa}    ${cmd}
     danos_cli.pr    ${output}
     ${o}    Evaluate    ''.join(${output})
-    Should Contain    ${o}    (https) : Connection timed out
+    # Debian 13's netcat-openbsd words this differently from the netcat this
+    # suite was written against: "port 25 (tcp) timed out: Operation now in
+    # progress" rather than "(smtp) : Connection timed out". The service name
+    # is gone and so is the phrase; match what both versions share.
+    Should Contain    ${o}    timed out
 
 Remove blk-https firewall rule on the interface
     Log    Remove blk-https firewall rule on the interface
@@ -443,7 +457,11 @@ Verify HTTP is blocked
     ${output}    danos_cli.config_show    ${R1}   ${user}    ${pa}    ${cmd}
     danos_cli.pr    ${output}
     ${o}    Evaluate    ''.join(${output})
-    Should Contain    ${o}    (http) : Connection timed out
+    # Debian 13's netcat-openbsd words this differently from the netcat this
+    # suite was written against: "port 25 (tcp) timed out: Operation now in
+    # progress" rather than "(smtp) : Connection timed out". The service name
+    # is gone and so is the phrase; match what both versions share.
+    Should Contain    ${o}    timed out
 
 Remove blk-http firewall rule on the interface
     Log    Remove blk-http firewall rule on the interface
