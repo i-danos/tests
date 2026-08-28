@@ -41,6 +41,7 @@ Resource           ../keyword/IPSEC_VPN_DANOS_keywords.robot
 Resource           ../testdata/IPSEC_VPN_DANOS_testdata.robot
 
 *** Variables ***
+${RELEASE}    2608    # release id under test; override with --variable RELEASE:<id>
 
 *** Test Cases ***
 Perform prerequisite checks(Access, Enable cli management & Clear config)
