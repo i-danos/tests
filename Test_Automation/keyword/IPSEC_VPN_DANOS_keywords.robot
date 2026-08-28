@@ -159,41 +159,48 @@ Verify E2E reachability from R3
     Should Not Contain    ${o}    100%
 
 Send traffic and validate it is received
-    Log   Send ICMP traffic from source IP ${dest1} to destination IP ${dest2}
-    danos_cli.sendping    ${R1}   ${user}    ${pa}    ${dest2}
+    Log   Send ICMP traffic from ${dest1} to ${dest2} and confirm it arrives
+    # Was a tcpdump on R3's .spathintf asserting both addresses appear. That
+    # interface is the dataplane's slow path; traffic through an established
+    # tunnel takes the fast path and never shows up there, so the capture came
+    # back empty for a tunnel that was working. Same reason the encryption
+    # check below moved off tcpdump.
+    #
+    # R3's inbound SA counter answers the question directly: it advances only
+    # when R3 decrypts packets that reached it.
+    ${before}    danos_cli.ipsec_sa_packets    ${R3}    ${user}    ${pa}
 
-    Log   Verify traffic on VPN interface ${vpnif} at the destination ${dest2}
-    ${output}    danos_cli.capture_traffic    ${R3}   ${user}    ${pa}    .spathintf
-    danos_cli.pr    ${output}
-    ${o}    Evaluate    ''.join(${output})
-    Should Contain    ${o}    ${dest1}
-    Should Contain    ${o}    ${dest2}
+    danos_cli.sendping    ${R1}   ${user}    ${pa}    ${dest2}
+    Sleep    8s
+
+    ${after}    danos_cli.ipsec_sa_packets    ${R3}    ${user}    ${pa}
+    Log    R3 SA packets ${before} -> ${after}
+    Should Be True    ${after} > ${before}    no traffic reached R3 through the tunnel
 
 Validate VPN traffic is encrypted in the network
-    Log   Verify traffic is encrypted on the main interfaces of the routers
-    # On R1
-    ${output}    danos_cli.capture_traffic    ${R1}   ${user}    ${pa}    ${R1R2interface}
-    danos_cli.pr    ${output}
-    ${o}    Evaluate    ''.join(${output})
-    Should Not Contain    ${output}    ${dest1}
-    Should Not Contain    ${output}    ${dest2}
-    Should Contain    ${o}    ESP
+    Log   Verify the dataplane SAs carry the traffic
+    # This used to run tcpdump on each router and assert on ESP. That cannot
+    # work here: the interfaces belong to the DPDK dataplane, so the kernel --
+    # and tcpdump with it -- only sees the cleartext copy handed up to it,
+    # while the ciphertext goes straight out of the physical port. All three
+    # routers captured plaintext ICMP and zero ESP while the tunnel was
+    # carrying traffic correctly, so the check failed for a working tunnel.
+    #
+    # The SA counters do distinguish the two cases: they advance only when
+    # packets are encrypted or decrypted.
+    ${before1}    danos_cli.ipsec_sa_packets    ${R1}    ${user}    ${pa}
+    ${before3}    danos_cli.ipsec_sa_packets    ${R3}    ${user}    ${pa}
 
-    # On R2
-    ${output}    danos_cli.capture_traffic    ${R2}   ${user}    ${pa}    ${R2R3interface}
-    danos_cli.pr    ${output}
-    ${o}    Evaluate    ''.join(${output})
-    Should Not Contain    ${output}    ${dest1}
-    Should Not Contain    ${output}    ${dest2}
-    Should Contain    ${o}    ESP
+    danos_cli.sendping    ${R1}   ${user}    ${pa}    ${dest2}
+    Sleep    8s
 
-    # On R3
-    ${output}    danos_cli.capture_traffic    ${R3}   ${user}    ${pa}    ${R3R2interface}
-    danos_cli.pr    ${output}
-    ${o}    Evaluate    ''.join(${output})
-    Should Not Contain    ${output}    ${dest1}
-    Should Not Contain    ${output}    ${dest2}
-    Should Contain    ${o}    ESP
+    ${after1}    danos_cli.ipsec_sa_packets    ${R1}    ${user}    ${pa}
+    ${after3}    danos_cli.ipsec_sa_packets    ${R3}    ${user}    ${pa}
+    Log    R1 SA packets ${before1} -> ${after1}
+    Log    R3 SA packets ${before3} -> ${after3}
+
+    Should Be True    ${after1} > ${before1}    R1 encrypted no traffic
+    Should Be True    ${after3} > ${before3}    R3 encrypted no traffic
 
 Validate OSPF status on R1
     Log    Validate OSPF status on R1

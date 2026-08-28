@@ -15,6 +15,35 @@ def config_set(ip, user, ps, cmd):
     handle.exit()
     handle.logout()
 
+def ipsec_sa_packets(ip, user, ps):
+    """Total packets carried by the dataplane's IPsec SAs.
+
+    tcpdump cannot answer "is this traffic encrypted" on DANOS. The interfaces
+    belong to the DPDK dataplane -- /sys/class/net/<if>/device does not exist
+    for them -- so what the kernel sees, and what tcpdump therefore captures,
+    is the cleartext copy handed up to it. Encryption happens in userspace and
+    the ciphertext goes straight out of the physical port. Captures on all
+    three routers show plaintext ICMP and no ESP even while the tunnel is
+    carrying traffic correctly.
+
+    The SA counters do answer it: they only advance when packets are actually
+    encrypted or decrypted.
+    """
+    cmd = ("/opt/vyatta/bin/vplsh -l -c 'ipsec sad' | "
+           "python3 -c \"import sys,json;"
+           "d=json.load(sys.stdin);"
+           "print(sum(s.get('packets',0) for s in d.get('sas',[])))\"")
+    handle = vymgmt.Router(ip, user, password=ps, port=22)
+    handle.login()
+    out = handle.run_op_mode_command('sudo ' + cmd)
+    handle.exit()
+    handle.logout()
+    for line in reversed(out.split("\n")):
+        line = line.strip()
+        if line.isdigit():
+            return int(line)
+    return 0
+
 def config_show_service(ip, user, ps, cmd):
     handle = vymgmt.Router(ip, user, password=ps, port=22)
     handle.login()
