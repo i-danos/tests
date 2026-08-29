@@ -190,7 +190,14 @@ Validate MPLS-LDP IPv4 discovery status on PE1
     danos_cli.pr    ${output}
     ${o}    Evaluate    ''.join(${output})
     Should Contain    ${o}    ${P1ID}
-    Should Contain    ${o}    ${PE2ID}
+    # PE1 is not expected to discover PE2. LDP link discovery reaches directly
+    # connected neighbours, PE1 configures one discovery interface -- the one
+    # facing P1 -- and there is no targeted configuration anywhere in this
+    # suite. The topology is PE1 -- P1 -- PE2, so P1 is the only neighbour PE1
+    # can see, and asserting on PE2 here could never pass.
+    #
+    # The equivalent check on P1 below does assert both, correctly: P1 is
+    # directly connected to each of them.
     Should Not Contain    ${o}    ${PE1ID}
 
 Validate MPLS-LDP IPv4 discovery status on P1
@@ -207,7 +214,8 @@ Validate MPLS-LDP IPv4 discovery status on PE2
     ${output}    ShowService    ${PE2}   ${user}    ${pa}    ${validate_mpls_ldp_ipv4_discovery}
     danos_cli.pr    ${output}
     ${o}    Evaluate    ''.join(${output})
-    Should Contain    ${o}    ${PE1ID}
+    # Mirror of the PE1 case above: PE2 is directly connected only to P1, so it
+    # cannot discover PE1. Removed the ${PE1ID} assertion for the same reason.
     Should Contain    ${o}    ${P1ID}
     Should Not Contain    ${o}    ${PE2ID}
 
