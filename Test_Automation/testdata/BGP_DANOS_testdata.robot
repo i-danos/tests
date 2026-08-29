@@ -332,6 +332,16 @@ ${show_bgp_ipv4_unicast_hop}    show protocols bgp ipv4 unicast ${R3ID}
 ...    protocols ospf area ${ospf_area} network ${R1R2_nw}/24
 
 @{R2_protocol_config_ibgp_multihop}=
+# R2 has to pin its router-id the way R1 and R3 do. Without this line ospfd
+# falls back to the highest interface address, because nothing in this test
+# configures a loopback on R2. That address is not stable: the surrounding
+# tests in this suite add and remove dataplane addresses, and when the current
+# highest one goes away zebra recomputes the router-id -- observed here going
+# from 203.1.1.3 (the dp0s10/R4 link) to 202.1.1.3 once the R4 link was torn
+# down. Changing the router-id resets every adjacency, so the neighbour was
+# back in ExStart with a sub-second uptime by the time the check below ran,
+# however long the sleep was.
+...    protocols ospf parameters router-id ${R2ID}
 ...    protocols ospf area ${ospf_area} network ${R2ID}/32
 ...    protocols ospf area ${ospf_area} network ${R1R2_nw}/24
 ...    protocols ospf area ${ospf_area} network ${R2R3_nw}/24
