@@ -104,6 +104,16 @@ Configure routing protocol
         SetCommand    ${vm}    ${protocol}
     END
 
+BGP Table Should Contain
+    [Documentation]    One poll of a router's BGP table, for Wait Until Keyword
+    ...    Succeeds. Fails while the table is still empty, which is what a
+    ...    session that has not come up yet looks like:
+    ...    "No BGP prefixes displayed, 0 exist".
+    [Arguments]    ${vm}    ${prefix}
+    ${output}    ShowCommand    ${vm}    ${show_bgp_ipv4_unicast}
+    Log    ${output}
+    Should Contain    ${output}    ${prefix}
+
 Route Reflector Rule-1 Configuration and verification
     Log    Rule-1: If a RR receives a NLRI from a non-RR client, the RR advertises the NLRI to a RR client. It does not advertise the NLRI to a non-route-reflector client.
     Log    R1=RR-Client, R2=RR, R3=NRR Client, R4=NRR-Client
@@ -118,13 +128,20 @@ Route Reflector Rule-1 Configuration and verification
         SetCommand    ${vm}    ${protocol}
     END
     Log    Verify NLRi is advertised to RR-Client in Route Reflector-${R2}. NLRi=Network layer reachability information
-    ${output}    ShowCommand    ${R2}    ${show_bgp_ipv4_unicast}
-    Log    ${output}
-    Should Contain    ${output}    ${R3R2_iface_ip}
+    # This case brings the sessions up from nothing, where the later ones only
+    # reconverge an already-established mesh -- which is why they get away with
+    # "Sleep 5" and this one had no wait at all. The four SetCommands take about
+    # 6 seconds together and the check ran 0.06s after the last one, so the
+    # table was still empty ("No BGP prefixes displayed, 0 exist") and both this
+    # case and "Validate Next-hop attribute", which reuses this configuration,
+    # failed together. Reproducible, and still a race: on a slower box it simply
+    # loses every time. Poll instead of sleeping, so a converged run costs
+    # nothing and a slow one is still correct.
+    Wait Until Keyword Succeeds    90s    5s
+    ...    BGP Table Should Contain    ${R2}    ${R3R2_iface_ip}
     Log    Verify NLRi is received in RR-Client ${R1}
-    ${output}    ShowCommand    ${R1}    ${show_bgp_ipv4_unicast}
-    Log    ${output}
-    Should Contain    ${output}    ${R3R2_iface_ip}
+    Wait Until Keyword Succeeds    90s    5s
+    ...    BGP Table Should Contain    ${R1}    ${R3R2_iface_ip}
     Log    Verify NLRi is NOT received in Non-RR-Client ${R4}
     ${output}    ShowCommand    ${R4}    ${show_bgp_ipv4_unicast}
     Log    ${output}
