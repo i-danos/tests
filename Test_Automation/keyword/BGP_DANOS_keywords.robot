@@ -384,12 +384,27 @@ Verify local preference
     Log    Apply local preference and reset bgp
     SetCommand    ${R3}    ${apply_local_preference}
     ShowCommand    ${R3}    ${reset_bgp}
-    # Sleep 5 sec for convergence # REQUIRED
-    Sleep    5
     Log    Verify local preference expected after
-    ${output}    ShowCommand    ${R3}    show ip route
+    # "Sleep 5 # REQUIRED" used to stand here, and 5 seconds is almost exactly
+    # how long the reset takes to converge. Measured on this topology, straight
+    # from the router: the route leaves the table 1s after "reset protocols bgp
+    # all neighbor" and is back 3.8s, 4.0s, 3.8s later over three runs. The
+    # assertion therefore fired about a second after the route returned -- when
+    # nothing else was competing for the box. Under the full suite, with twelve
+    # tests of BGP state already in place and four VMs busy, it lands the other
+    # side of the boundary and the run fails here while the same test passes on
+    # its own. Poll instead of sleeping.
+    Wait Until Keyword Succeeds    90s    2s
+    ...    IP Route Should Contain    ${R3}    ${local_pref_expected_after}
+
+IP Route Should Contain
+    [Documentation]    One poll of a router's IP routing table, for Wait Until
+    ...    Keyword Succeeds. Fails while the route is absent, which is what a
+    ...    BGP session that has not finished re-converging looks like.
+    [Arguments]    ${vm}    ${route}
+    ${output}    ShowCommand    ${vm}    show ip route
     Log    ${output}
-    Should Contain    ${output}    ${local_pref_expected_after}
+    Should Contain    ${output}    ${route}
 
 Validate BGP confederation
     Log     /--eBGP------R4(AS200)------eBGP-\
