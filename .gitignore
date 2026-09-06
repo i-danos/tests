@@ -1,2 +1,8 @@
 __pycache__/
 *.pyc
+
+# Robot output directories. Every run writes one, they accumulate fast (44 here
+# at the time of writing), and they are exactly what a careless "git add -A"
+# sweeps into a commit -- that mistake once put 715 build-cache files and 20 MB
+# into a source package.
+Test_Automation/results-*/
