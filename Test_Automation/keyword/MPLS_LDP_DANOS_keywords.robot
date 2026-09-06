@@ -167,14 +167,34 @@ Validate OSPF status on PE2
     Should Contain    ${o}    Full
 
 Validate MPLS-LDP Neighbor status
+    # Nothing waits for LDP anywhere in this suite. The one Sleep, 40s, belongs
+    # to OSPF and runs *before* MPLS LDP is configured; the LDP validations that
+    # follow rely on the intervening tests happening to take long enough.
+    #
+    # Measured on the ipsec topology, polling P1 every 5s through a whole run:
+    # the suite starts, LDP is configured, and the first neighbour reaches
+    # OPERATIONAL about 110s in, the second about 6s after that. The four LDP
+    # validations asserted well before either, so the run scored 7 of 11 twice
+    # in a row -- on an image where LDP is fine. Configured by hand on the same
+    # two routers the session comes up and the FSM log ends
+    # "from OPENREC to OPERATIONAL".
+    #
+    # The gap is far too wide to close by enlarging the sleep, and a constant
+    # would be wrong again the moment the topology or the load changes. Poll,
+    # the way the BGP suite's local-preference check now does.
     FOR  ${ip}  IN    ${PE1}    ${P1}    ${PE2}
         Log    Validate MPLS-LDP Neighbor status on ${ip}
-        ${output}    ShowService    ${ip}   ${user}    ${pa}    ${validate_mpls_ldp_neighbor}
-        danos_cli.pr    ${output}
-        ${o}    Evaluate    ''.join(${output})
-        Should Contain    ${o}    OPERATIONAL
-
+        Wait Until Keyword Succeeds    4 min    10 s
+        ...    MPLS-LDP Neighbor Should Be Operational    ${ip}
     END
+
+MPLS-LDP Neighbor Should Be Operational
+    [Arguments]    ${ip}
+    ${output}    ShowService    ${ip}   ${user}    ${pa}    ${validate_mpls_ldp_neighbor}
+    danos_cli.pr    ${output}
+    ${o}    Evaluate    ''.join(${output})
+    Should Contain    ${o}    OPERATIONAL
+
 Validate MPLS-LDP IPv4 interface status
     FOR  ${ip}  IN    ${PE1}    ${P1}    ${PE2}
         Log    Validate MPLS-LDP IPv4 interface status on ${ip}
