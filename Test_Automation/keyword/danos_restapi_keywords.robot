@@ -1,3 +1,6 @@
+*** Settings ***
+Resource          mgmt_keywords.robot
+
 # * Copyright (c) 2021-2022, Happiest Minds Technologies Limited Intellectual Property. All rights reserved.
 # *
 # * SPDX-License-Identifier: LGPL-2.1-only
@@ -421,6 +424,7 @@ Prerequisite checks
     Read Until    \#
     Write    delete interfaces dataplane
     Read Until    \#
+    Restore management address
     Write    commit
     Read Until    \#
     Write    exit
