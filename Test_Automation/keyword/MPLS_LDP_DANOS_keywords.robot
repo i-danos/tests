@@ -2,6 +2,7 @@
 # *
 # * SPDX-License-Identifier: LGPL-2.1-only
 *** Settings ***
+Resource          mgmt_keywords.robot
 Variables         ../variable/MPLS_LDP_DANOS_Variables.py
 Library           SSHLibrary
 Library           String
@@ -47,6 +48,7 @@ Clear configurations on the topology
         ${o}    Read Until    \#
         Write    delete security vpn
         ${o}    Read Until    \#
+        Restore management address
         Write    commit
         ${o}    Read Until    \#
         Close All Connections

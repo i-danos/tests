@@ -2,6 +2,7 @@
 # *
 # * SPDX-License-Identifier: LGPL-2.1-only
 *** Settings ***
+Resource          mgmt_keywords.robot
 Library           SSHLibrary
 Library           String
 Library           Collections
@@ -57,6 +58,7 @@ DeleteCommand
         Write    ${cmd}
         Read Until    \#
     END
+    Restore management address
     Write    commit
     Read Until    \#
     Write    exit

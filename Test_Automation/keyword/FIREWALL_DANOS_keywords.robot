@@ -3,6 +3,7 @@
 # * SPDX-License-Identifier: LGPL-2.1-only
 
 *** Settings ***
+Resource          mgmt_keywords.robot
 Variables         ../testdata/FIREWALL_DANOS_testdata.py
 Library           SSHLibrary
 Library           String
@@ -50,6 +51,7 @@ Clear configurations on the topology
         ${o}    Read Until    \#
         Write    delete security firewall
         ${o}    Read Until    \#
+        Restore management address
         Write    commit
         ${o}    Read Until    \#
         Close All Connections
