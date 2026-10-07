@@ -72,7 +72,7 @@ def ipsec_sa_packets(ip, user, ps):
            "python3 -c \"import sys,json;"
            "d=json.load(sys.stdin);"
            "print(sum(s.get('packets',0) for s in d.get('sas',[])))\"")
-    handle = vymgmt.Router(ip, user, password=ps, port=22)
+    handle = Router(ip, user, password=ps, port=22)
     handle.login()
     out = handle.run_op_mode_command('sudo ' + cmd)
     handle.exit()
