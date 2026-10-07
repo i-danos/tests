@@ -73,12 +73,14 @@ Every capability is answered by ${backend} on ${vm}
 Object view lists its classes on ${vm}
     ${o}    The command show platform dataplane objects is available on ${vm}
     FOR  ${cls}  IN    route    route6    mroute    mroute6    mpls-route    vrf
+    ...                nexthop-group    interface    qos-if    qos-vlan
         Should Match Regexp    ${o}    (?m)^\\s+${cls}\\s+yes\\s*$
     END
     # A class that cannot be walked says why. Without the reason an empty class
     # reads as "nothing is programmed here", which is a different statement.
-    Should Match Regexp    ${o}    (?m)^\\s+qos-if\\s+no \\(.+\\)\\s*$
-    Should Match Regexp    ${o}    (?m)^\\s+qos-vlan\\s+no \\(.+\\)\\s*$
+    # qos-if and qos-vlan used to be the two such classes; their walkers exist
+    # now, so what is left to check is that no class says a bare "no".
+    Should Not Match Regexp    ${o}    (?m)^\\s+[\\w-]+\\s+no\\s*$
     RETURN    ${o}
 
 Count objects reported by ${cmd} on ${vm}
