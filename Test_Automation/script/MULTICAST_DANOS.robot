@@ -97,6 +97,7 @@ PIM neighbours and the SSM tree form
     ...    show ip mroute    ${SSM_GROUP}
 
 IPv4 SSM packets cross the transit router
+    Warm up the forwarding entry    ${R1}    ${R2}    dp0s10    mif    v4
     ${in0}=    Mif In     ${R2}    dp0s9
     ${out0}=   Mif Out    ${R2}    dp0s10
     ${r3in0}=  Mif In     ${R3}    dp0s10
@@ -159,6 +160,7 @@ IPv6 reaches the RP and PIM6 neighbours form
     ...    show ipv6 mld joins    ${V6_GROUP}
 
 IPv6 multicast packets cross the transit router
+    Warm up the forwarding entry    ${R1}    ${R2}    dp0s10    mif6    v6
     ${in0}=    Mif In     ${R2}    dp0s9     mif6
     ${out0}=   Mif Out    ${R2}    dp0s10    mif6
     ${r3in0}=  Mif In     ${R3}    dp0s10    mif6
@@ -173,6 +175,34 @@ IPv6 multicast packets cross the transit router
     Should Be True    ${r3in1} - ${r3in0} >= ${min}    R3 received ${r3in1}-${r3in0} of ${COUNT}
 
 *** Keywords ***
+Warm up the forwarding entry
+    [Documentation]    The first packets of a flow miss the forwarding cache and are
+    ...                handled by the slow path until the entry is installed. On a
+    ...                slow runner that took long enough to swallow two thirds of a
+    ...                3000-packet burst (R2 received 2998, forwarded 1042), which
+    ...                measured the install time and not the forwarding. Send a short
+    ...                burst, wait until the transit router forwards, then measure.
+    ...                The install latency itself is not asserted here.
+    [Arguments]    ${source}    ${transit}    ${out_if}    ${family}    ${ver}
+    Wait Until Keyword Succeeds    90s    1s    Send a short burst and check forwarding
+    ...    ${source}    ${transit}    ${out_if}    ${family}    ${ver}
+    Sleep    2s
+
+Send a short burst and check forwarding
+    [Arguments]    ${source}    ${transit}    ${out_if}    ${family}    ${ver}
+    IF    '${ver}' == 'v4'
+        Send Multicast V4    ${source}    ${SSM_GROUP}    ${SSM_SOURCE}    200
+    ELSE
+        Send Multicast V6    ${source}    ${V6_GROUP}    dp0s9    200
+    END
+    Sleep    1s
+    Transit router forwards    ${transit}    ${out_if}    ${family}
+
+Transit router forwards
+    [Arguments]    ${router}    ${out_if}    ${family}
+    ${n}=    Mif Out    ${router}    ${out_if}    ${family}
+    Should Be True    ${n} > 0    nothing forwarded on ${out_if} yet
+
 Output contains
     [Arguments]    ${router}    ${command}    ${needle}
     ${out}=    Vtysh    ${router}    ${command}
