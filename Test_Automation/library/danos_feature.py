@@ -234,3 +234,18 @@ def ping_received(ip, target, count=3):
 
 def interface_mac(ip, iface):
     return _ssh(ip, "cat /sys/class/net/%s/address" % iface).strip()
+
+
+def dpa_route_object(ip, prefix, klass="route"):
+    """The dataplane object for `prefix` (e.g. 10.0.0.0/24), or None.
+
+    Keys read vrf:<name>/table:<id>/<addr>/<len>/scope:<n>, so the match is on
+    "/<addr>/<len>/" and never on a substring of another prefix.
+    """
+    addr, plen = prefix.split("/")
+    needle = "/%s/%s/" % (addr, plen)
+    data = vplsh_json(ip, "dpa object show %s" % klass)
+    for o in data.get("dpa_objects", {}).get("objects", []):
+        if needle in o.get("key", ""):
+            return o
+    return None
