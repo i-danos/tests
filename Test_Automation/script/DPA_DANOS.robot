@@ -30,10 +30,12 @@ Documentation   The forwarding-abstraction operational views, from the CLI.
 ...             4. Objects carry the backend that holds them
 ...             5. Filtering by state across the box agrees with filtering one class
 ...             6. The per-class subset views are reachable
+...             7. A route object carries its next hops (kind, gateway, interface)
 
 Library           SSHLibrary
 Library           String
 Library           Collections
+Library           ../library/danos_feature.py
 Resource          ../keyword/DPA_DANOS_keywords.robot
 
 *** Variables ***
@@ -65,3 +67,42 @@ Filtering by state across the box agrees with filtering one class
 
 Per-class programming state is reachable for every subset
     Per-object state is reachable per class on ${R1}
+
+Route objects carry their next hops
+    [Documentation]    The object view used to say which routes the data plane held
+    ...                and nothing about where they went, so a route present with the
+    ...                wrong next hop looked identical to a correct one. One route with a
+    ...                gateway and one blackhole, so "every entry has a via" and "no entry
+    ...                has one" are both distinguishable from the real thing.
+    [Teardown]    Remove the next-hop probe routes on ${R1}
+    Cli Commit    ${R1}
+    ...    set interfaces dataplane dp0s9 address 10.98.0.1/24
+    ...    set protocols static route 10.99.1.0/24 next-hop 10.98.0.2
+    ...    set protocols static route 10.99.2.0/24 blackhole
+    Wait Until Keyword Succeeds    60s    3s    Route object has next hop    ${R1}
+    ...    10.99.1.0/24    gateway    10.98.0.2    dp0s9
+    Wait Until Keyword Succeeds    60s    3s    Route object has next hop    ${R1}
+    ...    10.99.2.0/24    blackhole    ${EMPTY}    ${EMPTY}
+
+*** Keywords ***
+Route object has next hop
+    [Arguments]    ${router}    ${prefix}    ${kind}    ${via}    ${ifname}
+    ${o}=    Dpa Route Object    ${router}    ${prefix}
+    Should Not Be Equal    ${o}    ${None}    no object for ${prefix}
+    ${hops}=    Set Variable    ${o['next_hops']}
+    Should Not Be Empty    ${hops}    the object for ${prefix} carries no next hops
+    Should Be Equal    ${hops[0]['kind']}    ${kind}
+    IF    '${via}' != ''
+        Should Be Equal    ${hops[0]['via']}    ${via}
+    ELSE
+        Dictionary Should Not Contain Key    ${hops[0]}    via
+    END
+    IF    '${ifname}' != ''
+        Should Be Equal    ${hops[0]['ifname']}    ${ifname}
+    END
+
+Remove the next-hop probe routes on ${router}
+    Cli Commit    ${router}
+    ...    delete protocols static route 10.99.1.0/24
+    ...    delete protocols static route 10.99.2.0/24
+    ...    delete interfaces dataplane dp0s9 address 10.98.0.1/24
