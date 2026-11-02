@@ -15,6 +15,7 @@ because a rejected commit otherwise looks like a feature that does not work.
 import json
 import re
 import subprocess
+import time
 
 SSH_OPTS = ["-o", "StrictHostKeyChecking=no",
             "-o", "UserKnownHostsFile=/dev/null",
@@ -72,36 +73,83 @@ def cli_commit(ip, *commands):
     return text
 
 
-def clear_config(ip, restore_iface="", restore_address="dhcp"):
-    """Remove what earlier suites left, in one transaction.
-
-    `restore_iface` re-adds the management address inside the same session so
-    a product image, whose management port is a dataplane port, keeps its way
-    in (see mgmt_keywords.robot).
-    """
-    cmds = ["delete interfaces dataplane", "delete interfaces tunnel",
-            "delete interfaces bridge", "delete interfaces loopback",
-            "delete protocols", "delete policy", "delete security",
-            "delete vpn", "delete resources"]
-    if restore_iface:
-        cmds.append("set interfaces dataplane %s address %s"
-                    % (restore_iface, restore_address))
-    # "delete" of a node that does not exist is an error for vcli but not a
-    # failed commit; run each delete on its own session-free line and ignore
-    # that, then commit once.
-    body = "".join('vcli -s $SID -c "%s" >/dev/null 2>&1;' % c
-                   for c in cmds)
+def _session_commit(ip, cmds):
+    """Run `cmds` (each ignoring its own error) in one session, commit, return the commit text."""
+    body = "".join('vcli -s $SID -c "%s" >/dev/null 2>&1;' % c for c in cmds)
     script = ('SID=$$; eval "$(cli-shell-api getSessionEnv $SID)"; '
               'cli-shell-api setupSession; %s '
               'vcli -s $SID -c commit 2>&1; '
               'cli-shell-api teardownSession' % body)
-    out = _ssh(ip, script)
+    return _ssh(ip, script)
+
+
+def _dp_addresses(ip, keep_iface=""):
+    """(iface, address) for every global address on a dataplane port.
+
+    Read from the kernel, not the CLI: what a later commit trips over is the
+    address that is actually there. `keep_iface` is the management port.
+    """
+    out = _ssh(ip, "ip -br addr | grep -E '^dp[0-9]'")
+    found = []
+    for line in out.splitlines():
+        f = line.split()
+        if not f or f[0] == keep_iface:
+            continue
+        found += [(f[0], a) for a in f[2:] if not a.lower().startswith("fe80:")]
+    return found
+
+
+def clear_config(ip, restore_iface="", restore_address="dhcp"):
+    """Remove what earlier suites left, and prove the dataplane ports carry no address.
+
+    `restore_iface` re-adds the management address inside the same session so
+    a product image, whose management port is a dataplane port, keeps its way
+    in (see mgmt_keywords.robot).
+
+    The commit result used to be thrown away. When the one-shot clear is
+    rejected the compensation reverts everything, the addresses stay, and the
+    next suite fails on them ("bridge group members cannot have an address")
+    far from the cause. So: try the one-shot clear; if it is rejected, clear
+    in two steps (everything but the dataplane nodes, then each address on its
+    own); then require the ports to be free of addresses, or raise with what
+    the router said.
+    """
+    non_dp = ["delete interfaces tunnel", "delete interfaces bridge",
+              "delete interfaces loopback", "delete protocols",
+              "delete policy", "delete security", "delete vpn",
+              "delete resources"]
+    restore = []
+    if restore_iface:
+        restore.append("set interfaces dataplane %s address %s"
+                       % (restore_iface, restore_address))
+    # "delete" of a node that does not exist is an error for vcli but not a
+    # failed commit, so each delete ignores its own error and one commit follows.
+    out = _session_commit(ip, ["delete interfaces dataplane"] + non_dp + restore)
+    notes = [out]
+    if _COMMIT_FAIL.search(out) or re.search(r"failed", out, re.I):
+        out = _session_commit(ip, non_dp)
+        notes.append("second step (non-dataplane): " + out)
+        left = _dp_addresses(ip, restore_iface)
+        out = _session_commit(
+            ip, ["delete interfaces dataplane %s address %s" % x for x in left]
+            + restore)
+        notes.append("third step (addresses): " + out)
     # FRR config written straight through vtysh is outside the DANOS tree.
     _ssh(ip, "for a in $(sudo vtysh -c 'show running-config' 2>/dev/null "
              "| awk '/^router bgp/{print $3}'); do "
              "sudo vtysh -c 'configure terminal' -c \"no router bgp $a\" "
              ">/dev/null 2>&1; done")
-    return out
+    left = _dp_addresses(ip, restore_iface)
+    for _ in range(10):  # the data plane applies the removal a moment after the commit
+        if not left:
+            break
+        time.sleep(1)
+        left = _dp_addresses(ip, restore_iface)
+    if left:
+        raise AssertionError(
+            "clear_config on %s left address(es) on dataplane ports %s:\n%s"
+            % (ip, left, "\n".join(notes)))
+    return "\n".join(notes)
 
 
 def vplsh(ip, command):
